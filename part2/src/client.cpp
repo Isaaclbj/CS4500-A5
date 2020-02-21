@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <iostream>
 
 void*
 get_msg(void *ss)
@@ -16,12 +17,10 @@ get_msg(void *ss)
     delete (int*)ss;
     while(1)
     {
-        char buffer[4096];
-        int len = read(client, buffer, 4096);
+        char buffer[128];
+        int len = recv(client, buffer, 128, 0);
         buffer[len] = 0;
         printf("%s\n", buffer);
-        fflush(stdout);
-        fflush(stdin);
     }
     return 0;
 }
@@ -34,7 +33,6 @@ main(int argc, char**argv)
     sock = socket(AF_INET, SOCK_STREAM, 0);
     serv.sin_family = AF_INET;
     serv.sin_port = htons(8080);
-    inet_pton(AF_INET, argv[2], &serv.sin_addr);
 	serv.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if(connect(sock, (struct sockaddr *) &serv, sizeof(serv)) == -1)
@@ -50,12 +48,20 @@ main(int argc, char**argv)
 
     while(1)
     {
-        char in_msg[4096];
-        getc(stdin);
-        scanf("%[^\n]",in_msg);
-        fflush(stdin);
-        fflush(stdout);
-        send(sock, in_msg, 4096, 0);
+        char in_msg[128];
+        int ii = 0;
+        while(ii < 127)
+        {
+            scanf("%c", &in_msg[ii]);
+            if(in_msg[ii] == '\n' || in_msg[ii] == '\0' || in_msg[ii] == '\r')
+            {
+                break;
+            }
+            ii++;
+        }
+        in_msg[ii + 1] = 0;
+	
+        send(sock, in_msg, 128, 0);
     }
     exit(0);
 }

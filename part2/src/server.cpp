@@ -15,7 +15,7 @@
     https://d1b10bmlvqabco.cloudfront.net/attach/k51bluky59n2jr/goynt4j0qaR/k6k8p5i5qxqa/L10.key.pdf
 */
 
-static const int BUFFER_SIZE = 4096;
+static const int BUFFER_SIZE = 128;
 static const int PORT = 8080;
 static const int MAX_CHILDREN = 16;
 
@@ -100,16 +100,12 @@ main(const int argc, const char **argv)
 
     int server_fd, sock, clnt_sock, rv, children = 0;
     struct sockaddr_in adr;
-    int opt = 1;
     int addr_len = sizeof(adr);
 
     rv = (server_fd = socket(AF_INET, SOCK_STREAM, 0));
     check_rv(rv, 1001);
 
-    // binding socket to port
-    rv = setsockopt(server_fd, SOL_SOCKET, 
-        SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
-    check_rv(rv, 1002);
+    
 
     // set attr
     adr.sin_family = AF_INET;
@@ -148,8 +144,6 @@ main(const int argc, const char **argv)
         pthread_join(thread[ii], 0);
     }
 
-    // user terminate
-    exit(0);
 }
 
 void*
@@ -163,7 +157,7 @@ conn_client(void* sd_ptr)
     // read from client
     while(1)
     {
-        char buffer[BUFFER_SIZE];
+        char buffer[BUFFER_SIZE] = {0};
         int len = read(sci.sd, buffer, BUFFER_SIZE);
         buffer[len] = 0;
         printf("user %d entered %s", sci.sd, buffer);
@@ -171,10 +165,11 @@ conn_client(void* sd_ptr)
         // chekc if it's command
         if(buffer[0] == '-')
         {
+            puts("handling - ");
             // list
-            if(!strcmp(buffer, "-list"))
+            if(!strncmp(buffer, "-list", 5))
             {
-                char out[4096];
+                char out[BUFFER_SIZE];
                 int nn = sprintf(out, "Current users:\n");
                 for(int ii = 0; ii < c_num; ii++)
                 {
@@ -185,19 +180,23 @@ conn_client(void* sd_ptr)
             }
 
             // pm
-            if(!strncmp(buffer, "-pm", 3))
+            if(!strncmp(buffer, "-pm ", 4))
             {
                 char target[36];
+                memset(target, 0, 36);
                 int pos = 4;
                 while(1)
                 {
                     if(buffer[pos] && buffer[pos] != ' ')
                     {
+                        printf("%c", buffer[pos]);
                         target[pos - 4] = buffer[pos];
+                        pos++;
                         continue;
                     }
                     break;
                 }
+                printf("looking for %s", target);
 
                 for(int ii = 0; ii < c_num; ii++)
                 {
@@ -205,7 +204,7 @@ conn_client(void* sd_ptr)
                     int target_id = strtol(target, &end, 10);
                     if(clients[ii].sd == target_id)
                     {
-                        char message[4096 + 26];
+                        char message[BUFFER_SIZE + 26];
                         int nn = sprintf(message, "%d (private message)> %s", sci.sd, buffer + pos);
                         message[nn] = 0;
                         send(clients[ii].sd, message, nn + 1, 0);
@@ -219,8 +218,8 @@ conn_client(void* sd_ptr)
         // broadcast
         else
         {
-            char message[4096 + 9];
-            int nn = sprintf(message, "%d > %s", sci.sd, buffer);
+            char message[BUFFER_SIZE + 22];
+            int nn = sprintf(message, "user id: %d says> %s", sci.sd, buffer);
             message[nn] = 0;
 
             for(int ii = 0; ii < c_num; ii++)
@@ -228,8 +227,6 @@ conn_client(void* sd_ptr)
                 send(clients[ii].sd, message, nn + 1, 0);
             }
         }
-        fflush(stdin);
-        fflush(stdout);
     }
 }
 //     check_rv(bytes_read, 2001);
