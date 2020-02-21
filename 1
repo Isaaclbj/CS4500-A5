@@ -1,0 +1,13 @@
+
+build:
+	g++ ./src/server.cpp -lpthread -o server
+	g++ ./src/client.cpp -lpthread -o client
+
+run: clean build
+	./server -ip 127.0.0.1 &
+	./client -ip 127.0.0.2
+	
+clean:
+	rm -f client
+	rm -f server
+
