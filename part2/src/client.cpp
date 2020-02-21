@@ -16,7 +16,7 @@ get_msg(void *ss)
     delete (int*)ss;
     while(1)
     {
-        char buffer[4096] = {0};
+        char buffer[4096];
         int len = read(client, buffer, 4096);
         buffer[len] = 0;
         printf("%s\n", buffer);
@@ -51,7 +51,10 @@ main(int argc, char**argv)
     while(1)
     {
         char in_msg[4096];
-        scanf("%[^\n]", in_msg);
+        getc(stdin);
+        scanf("%[^\n]",in_msg);
+        fflush(stdin);
+        fflush(stdout);
         send(sock, in_msg, 4096, 0);
     }
     exit(0);

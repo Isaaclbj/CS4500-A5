@@ -18,8 +18,6 @@
 static const int BUFFER_SIZE = 4096;
 static const int PORT = 8080;
 static const int MAX_CHILDREN = 16;
-static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 
 // class llist
@@ -144,6 +142,11 @@ main(const int argc, const char **argv)
         pthread_create(&thread[c_num], 0, conn_client, (void*)&clients[c_num]);
         c_num++;
     }
+    
+    for(int ii; ii < c_num; ii++)
+    {
+        pthread_join(thread[ii], 0);
+    }
 
     // user terminate
     exit(0);
@@ -160,9 +163,10 @@ conn_client(void* sd_ptr)
     // read from client
     while(1)
     {
-        char buffer[BUFFER_SIZE] = {0};
+        char buffer[BUFFER_SIZE];
         int len = read(sci.sd, buffer, BUFFER_SIZE);
         buffer[len] = 0;
+        printf("user %d entered %s", sci.sd, buffer);
 
         // chekc if it's command
         if(buffer[0] == '-')
@@ -224,6 +228,8 @@ conn_client(void* sd_ptr)
                 send(clients[ii].sd, message, nn + 1, 0);
             }
         }
+        fflush(stdin);
+        fflush(stdout);
     }
 }
 //     check_rv(bytes_read, 2001);
