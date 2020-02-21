@@ -5,6 +5,81 @@
 #include <stdlib.h>
 #include "string.h"
 #include <string>
+#include <math.h>
+
+//simple adding function
+class Adder : public Rower
+{
+public:
+	int total;
+	int count;
+
+	Adder()
+	{
+		total = 0;
+		count = 0;
+	}
+
+	bool accept(Row& r)
+	{
+		std::cout << "Rower1: " << count << std::endl;
+
+
+		total += r.get_int(0) + r.get_int(1) + r.get_int(2)
+			+ r.get_int(3) + r.get_int(4);
+	}
+
+	void join_delete(Rower* other)
+	{
+		total += dynamic_cast<Adder*>(other)->total;
+		delete other;
+	}
+};
+
+//expensive trig functions
+class Trigger : public Rower
+{
+public:
+	double total;
+	int count;
+	Trigger()
+	{
+		total = 10;
+		count = 0;
+	}
+
+	bool accept(Row& r)
+	{
+		std::cout << "Rower2: " << count << std::endl;
+
+		total += (r.get_bool(1));
+
+		//Cases where true for last 3
+		if (!r.get_bool(5) && r.get_bool(6) && r.get_bool(7)
+			&& r.get_bool(8))
+		{
+			total = sqrt(abs(total));
+		}
+		//Cases where true for first 3
+		else if(r.get_bool(5) && r.get_bool(6) && r.get_bool(7)
+			&& !r.get_bool(8))
+		{
+			total = cos(total);
+		}
+		//Cases where true for first 2
+		else if(r.get_bool(5) && r.get_bool(6) && !r.get_bool(7)
+			&& !r.get_bool(8))
+		{
+			total = sin(total);
+		}
+	}
+
+	void join_delete(Rower* other)
+	{
+		total += dynamic_cast<Trigger*>(other)->total;
+		delete other;
+	}
+};
 
 int main(int argc, char **argv)
 {
