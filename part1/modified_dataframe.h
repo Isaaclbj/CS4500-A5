@@ -5,7 +5,7 @@
 #include "linked_array.h"
 #include <stdlib.h>
 #include <thread>
-
+#include <iostream>
 int THREADS = 2;
 
 // forward declearation
@@ -607,17 +607,19 @@ public:
 	void set(size_t col, int val)
 	{
 		int *ret = (int*)items->get(col);
-		*ret = val;
+		 
+		ret = &val;
 	}
+
 	void set(size_t col, float val)
 	{
 		float *ret = (float*)items->get(col);
-		*ret = val;
+		ret = &val;
 	}
 	void set(size_t col, bool val)
 	{
 		bool *ret = (bool*)items->get(col);
-		*ret = val;
+		ret = &val;
 	}
 	/** Acquire ownership of the string. */
 	void set(size_t col, String* val)
@@ -868,8 +870,11 @@ public:
 	 *  the right schema and be filled with values, otherwise undedined.  */
 	void add_row(Row& row)
 	{
+
 		schm->add_row(new String(row.name));
+
 		rows->push_back(&row);
+
 	}
 
 	/** The number of rows in the dataframe. */

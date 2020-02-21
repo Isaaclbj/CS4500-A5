@@ -4,8 +4,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include "string.h"
-#include <string>
 #include <math.h>
+#include <cstdio>
 
 //simple adding function
 class Adder : public Rower
@@ -22,11 +22,7 @@ public:
 
 	bool accept(Row& r)
 	{
-		std::cout << "Rower1: " << count << std::endl;
-
-
-		total += r.get_int(0) + r.get_int(1) + r.get_int(2)
-			+ r.get_int(3) + r.get_int(4);
+		total += r.get_int(0) + r.get_int(1);
 	}
 
 	void join_delete(Rower* other)
@@ -45,33 +41,14 @@ public:
 	Trigger()
 	{
 		total = 10;
-		count = 0;
 	}
 
 	bool accept(Row& r)
 	{
-		std::cout << "Rower2: " << count << std::endl;
-
-		total += (r.get_bool(1));
-
-		//Cases where true for last 3
-		if (!r.get_bool(5) && r.get_bool(6) && r.get_bool(7)
-			&& r.get_bool(8))
-		{
-			total = sqrt(abs(total));
-		}
-		//Cases where true for first 3
-		else if(r.get_bool(5) && r.get_bool(6) && r.get_bool(7)
-			&& !r.get_bool(8))
-		{
-			total = cos(total);
-		}
-		//Cases where true for first 2
-		else if(r.get_bool(5) && r.get_bool(6) && !r.get_bool(7)
-			&& !r.get_bool(8))
-		{
-			total = sin(total);
-		}
+		total = sqrt(abs(total));
+		total += (r.get_int(1));
+		total = cos(r.get_int(0));
+		total = sin(r.get_int(1));
 	}
 
 	void join_delete(Rower* other)
@@ -81,56 +58,36 @@ public:
 	}
 };
 
-int main(int argc, char **argv)
+DataFrame* gen_df()
 {
-	const char* FILENAME = "modified_datafile.txt";
-	//open datafile.txt
-	std::ifstream datafile(FILENAME);
+	Schema sch("II");
+	DataFrame* df = new DataFrame(sch);
 
-	std::string line;
+	String* name0;
 
-	Schema sch("IIIIIBBBBS");
-	DataFrame df(sch);
-
-	//read in data to dataframe
-	while (datafile.peek() != EOF)
+	for (size_t i = 0; i < 6250000; i++)
 	{
-      getline(datafile, line);
-	  std::cout << "LINE IS " << line << std::endl;
-	  //tokenize by using space as delimiter
-	  char buff[line.length() + 1];
-	  strcpy(buff, line.c_str());
-
-	  char * temp = strtok(buff, " ");
-	  std::cout << "TEMP IS " << temp << std::endl;
-	  Row r(df.get_schema());
-	  //we know there's only 10 items in each row
-	  for (int i = 0; i < 10; i++)
-	  {
-		  std::cout << "Adding " << temp << " to row at index " << i << std::endl;
-		  //feed tokens into row
-		  if (i <= 4)
-		  {
-			  std::cout << "BREAKING HERE?" << std::endl;
-			  r.set(i, (int)atoi(temp));
-			  std::cout << "DOESN'T GET HERE" << std::endl;
-		  }
-		  else if (i <= 8)
-		  {
-			  r.set(i, (bool) atoi(temp));
-		  }
-		  else if (i = 9)
-		  {
-			  String* s = new String(temp, strlen(temp));
-			  r.set(i, s);
-		  }
-	  }
-
-	  df.add_row(r);
+		Row* r = new Row(sch);
+		r->name = name0->cstr_;
+		r->set(0, (int)i);
+		r->set(1, (int)i + 1);
+		df->add_row(*r);
 
 	}
-	std::cout << "FINISHED POPULATING DATAFRAME!" << std::endl;
-	datafile.close();
 
+
+	return df;
+}
+int main(int argc, char **argv)
+{
+	DataFrame* df = gen_df();
+
+	//time map execution on Adder with df data
+	//time pmap execution on Adder with df data
+	//compare times
+
+	//time map execution on Trigger with df data
+	//time pmap execution on Trigger with df data
+	//compare times
 	return 0;
 }

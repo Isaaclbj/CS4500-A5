@@ -74,7 +74,7 @@ class linked_array : public Object
         }
     }
 
-    void* get(size_t index)
+    void* get(int index)
     {
         if(index > max)
         {
@@ -99,7 +99,7 @@ class linked_array : public Object
         }
     }
 
-    void* set(size_t index, void *item)
+    void* set(int index, void *item)
     {
         if(index >= max)
         {
